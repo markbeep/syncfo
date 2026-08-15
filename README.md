@@ -32,6 +32,10 @@ Just relying on a Discord server sounds all nice and dandy. It's easy to set up 
 - hard to setup
 + indexed by search engines
 ```
+### AnswerOverflow
+> https://www.answeroverflow.com/
+
+Hosted in a single place. Can be set up on a server by simply adding a bot, which then has corresponding forum channels get indexed. Requires barely any setup.
 
 ### Discourse
 
