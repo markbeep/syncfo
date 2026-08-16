@@ -1,0 +1,6 @@
+[database]
+path = ".data/bot.db"
+migrations = "migrations"
+
+[logging]
+debug = true
