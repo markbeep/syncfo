@@ -19,3 +19,8 @@ type Thread struct {
 	ID      int64
 	GuildID int64
 }
+
+type TrackedChannel struct {
+	ID      int64
+	GuildID int64
+}

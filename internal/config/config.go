@@ -20,7 +20,7 @@ type Database struct {
 }
 
 type Logging struct {
-	Debug bool
+	Debug bool // optional
 }
 
 func (p Public) isComplete() bool {
@@ -45,7 +45,8 @@ type Secret struct {
 }
 
 type Discord struct {
-	Token string
+	Token     string
+	TestGuild string `toml:"test_guild"` // optional
 }
 
 func (s Secret) isComplete() bool {
@@ -55,6 +56,9 @@ func (s Secret) isComplete() bool {
 func (s *Secret) overwrite(o Secret) {
 	if o.Discord.Token != "" {
 		s.Discord.Token = o.Discord.Token
+	}
+	if o.Discord.TestGuild != "" {
+		s.Discord.TestGuild = o.Discord.TestGuild
 	}
 }
 
@@ -68,7 +72,8 @@ var (
 	loggingDebug = flagEnvBool("logging_debug", false, "Overwrite logging debug flag")
 
 	// secret overwrites
-	discordToken = flagEnvString("discord_token", "", "Overwrite Discord bot token")
+	discordToken     = flagEnvString("discord_token", "", "Overwrite Discord bot token")
+	discordTestGuild = flagEnvString("discord_test_guild", "", "Overwrite Discord test guild ID")
 )
 
 func Parse() (Public, Secret, error) {
@@ -119,7 +124,8 @@ func loadPub() (Public, error) {
 func loadSec() (Secret, error) {
 	overrides := Secret{
 		Discord: Discord{
-			Token: *discordToken,
+			Token:     *discordToken,
+			TestGuild: *discordTestGuild,
 		},
 	}
 

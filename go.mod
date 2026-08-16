@@ -3,7 +3,7 @@ module github.com/markbeep/syncfo
 go 1.26.6
 
 require (
-	github.com/bwmarrin/discordgo v0.29.0 // indirect
+	github.com/bwmarrin/discordgo v0.29.1-0.20260214123928-f43dd94faaac // indirect
 	github.com/dustin/go-humanize v1.0.1 // indirect
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/gorilla/websocket v1.4.2 // indirect
