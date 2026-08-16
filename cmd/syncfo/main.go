@@ -48,6 +48,53 @@ func main() {
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 
+	go func() {
+		active := sync.Map{}
+
+		for {
+			select {
+			case <-ctx.Done():
+				logger.Info("Received interrupt signal, stopping separate...")
+				return
+			case <-time.Tick(2 * time.Second):
+			}
+			queries := database.New(db)
+			ts, err := queries.ListUnbuiltThreads(ctx, database.ListUnbuiltThreadsParams{Limit: 100})
+			if err != nil {
+				logger.Fatal("Failed to list unbuilt threads", zap.Error(err))
+			}
+			for _, t := range ts {
+				if _, loaded := active.LoadOrStore(t, struct{}{}); loaded {
+					continue
+				}
+
+				go func(threadID int64) {
+					for {
+						msgs, err := queries.ListUnbuiltMessages(ctx, database.ListUnbuiltMessagesParams{ThreadID: threadID, Limit: 100})
+						if err != nil {
+							logger.Fatal("Failed to list unbuilt messages", zap.Error(err))
+						}
+
+						// add to whatever datastructure
+						time.Sleep(20 * time.Millisecond)
+
+						for _, m := range msgs {
+							queries.SetMessageBuilt(ctx, m.ID)
+						}
+
+						logger.Debug("Built messages", zap.Int64("threadId", threadID), zap.Int("messageCount", len(msgs)))
+
+						if len(msgs) == 100 {
+							break
+						}
+					}
+					active.Delete(threadID)
+				}(t)
+
+			}
+		}
+	}()
+
 out:
 	for {
 		wg := sync.WaitGroup{}
@@ -109,21 +156,21 @@ func bench(ctx context.Context, logger *zap.Logger, db *sql.DB) error {
 	for range rand.IntN(100) + 1 {
 		innerWg.Go(func() {
 			messageId := rand.Int64()
-			m, err := queries.InsertMessage(ctx, database.InsertMessageParams{ID: messageId, ThreadID: t.ID})
+			_, err := queries.InsertMessage(ctx, database.InsertMessageParams{ID: messageId, ThreadID: t.ID})
 			if err != nil {
 				logger.Fatal("Failed to insert message", zap.Error(err), zap.Int64("messageId", messageId), zap.Int64("threadId", t.ID), zap.Duration("elapsed", time.Since(start)))
 			}
-			logger.Debug("Inserted message", zap.Any("message", m))
 		})
 	}
 	innerWg.Wait()
+	logger.Debug("Inserted message", zap.Int64("threadId", t.ID), zap.Duration("elapsed", time.Since(start)))
 
 	// if err := tx.Commit(); err != nil {
 	// 	return fmt.Errorf("failed to commit transaction: %w", err)
 	// }
 
 	q := database.New(db)
-	msgs, err := q.ListMessagesByThread(ctx, t.ID)
+	msgs, err := q.ListMessagesByThread(ctx, database.ListMessagesByThreadParams{ThreadID: t.ID, Limit: 100})
 	if err != nil {
 		return fmt.Errorf("failed to list messages by thread (threadId=%d, elapsed=%s): %w", t.ID, time.Since(start), err)
 	}

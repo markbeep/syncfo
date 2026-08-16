@@ -7,12 +7,13 @@ package database
 
 import (
 	"context"
+	"database/sql"
 )
 
 const insertMessage = `-- name: InsertMessage :one
 INSERT INTO messages (id, thread_id)
 VALUES (?1, ?2)
-RETURNING id, thread_id
+RETURNING id, thread_id, built, last_edited
 `
 
 type InsertMessageParams struct {
@@ -23,7 +24,12 @@ type InsertMessageParams struct {
 func (q *Queries) InsertMessage(ctx context.Context, arg InsertMessageParams) (Message, error) {
 	row := q.db.QueryRowContext(ctx, insertMessage, arg.ID, arg.ThreadID)
 	var i Message
-	err := row.Scan(&i.ID, &i.ThreadID)
+	err := row.Scan(
+		&i.ID,
+		&i.ThreadID,
+		&i.Built,
+		&i.LastEdited,
+	)
 	return i, err
 }
 
@@ -46,14 +52,22 @@ func (q *Queries) InsertThread(ctx context.Context, arg InsertThreadParams) (Thr
 }
 
 const listMessagesByThread = `-- name: ListMessagesByThread :many
-SELECT id, thread_id
+SELECT id, thread_id, built, last_edited
 FROM messages
-WHERE thread_id = ?1
+WHERE thread_id = ?
 ORDER BY id ASC
+LIMIT ?
+OFFSET ?
 `
 
-func (q *Queries) ListMessagesByThread(ctx context.Context, threadID int64) ([]Message, error) {
-	rows, err := q.db.QueryContext(ctx, listMessagesByThread, threadID)
+type ListMessagesByThreadParams struct {
+	ThreadID int64
+	Limit    int64
+	Offset   int64
+}
+
+func (q *Queries) ListMessagesByThread(ctx context.Context, arg ListMessagesByThreadParams) ([]Message, error) {
+	rows, err := q.db.QueryContext(ctx, listMessagesByThread, arg.ThreadID, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}
@@ -61,7 +75,12 @@ func (q *Queries) ListMessagesByThread(ctx context.Context, threadID int64) ([]M
 	var items []Message
 	for rows.Next() {
 		var i Message
-		if err := rows.Scan(&i.ID, &i.ThreadID); err != nil {
+		if err := rows.Scan(
+			&i.ID,
+			&i.ThreadID,
+			&i.Built,
+			&i.LastEdited,
+		); err != nil {
 			return nil, err
 		}
 		items = append(items, i)
@@ -73,4 +92,109 @@ func (q *Queries) ListMessagesByThread(ctx context.Context, threadID int64) ([]M
 		return nil, err
 	}
 	return items, nil
+}
+
+const listUnbuiltMessages = `-- name: ListUnbuiltMessages :many
+SELECT id, thread_id, built, last_edited
+FROM messages
+WHERE NOT built AND thread_id = ?
+LIMIT ?
+OFFSET ?
+`
+
+type ListUnbuiltMessagesParams struct {
+	ThreadID int64
+	Limit    int64
+	Offset   int64
+}
+
+func (q *Queries) ListUnbuiltMessages(ctx context.Context, arg ListUnbuiltMessagesParams) ([]Message, error) {
+	rows, err := q.db.QueryContext(ctx, listUnbuiltMessages, arg.ThreadID, arg.Limit, arg.Offset)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Message
+	for rows.Next() {
+		var i Message
+		if err := rows.Scan(
+			&i.ID,
+			&i.ThreadID,
+			&i.Built,
+			&i.LastEdited,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listUnbuiltThreads = `-- name: ListUnbuiltThreads :many
+SELECT DISTINCT thread_id
+FROM messages
+WHERE NOT built
+LIMIT ?
+OFFSET ?
+`
+
+type ListUnbuiltThreadsParams struct {
+	Limit  int64
+	Offset int64
+}
+
+func (q *Queries) ListUnbuiltThreads(ctx context.Context, arg ListUnbuiltThreadsParams) ([]int64, error) {
+	rows, err := q.db.QueryContext(ctx, listUnbuiltThreads, arg.Limit, arg.Offset)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []int64
+	for rows.Next() {
+		var thread_id int64
+		if err := rows.Scan(&thread_id); err != nil {
+			return nil, err
+		}
+		items = append(items, thread_id)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const setMessageBuilt = `-- name: SetMessageBuilt :exec
+UPDATE messages
+SET built = TRUE
+WHERE id = ?
+`
+
+func (q *Queries) SetMessageBuilt(ctx context.Context, id int64) error {
+	_, err := q.db.ExecContext(ctx, setMessageBuilt, id)
+	return err
+}
+
+const setMessageLastEdited = `-- name: SetMessageLastEdited :exec
+UPDATE messages
+SET last_edited = ?
+WHERE id = ?
+`
+
+type SetMessageLastEditedParams struct {
+	LastEdited sql.NullTime
+	ID         int64
+}
+
+func (q *Queries) SetMessageLastEdited(ctx context.Context, arg SetMessageLastEditedParams) error {
+	_, err := q.db.ExecContext(ctx, setMessageLastEdited, arg.LastEdited, arg.ID)
+	return err
 }

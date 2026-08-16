@@ -6,7 +6,9 @@ CREATE TABLE threads (
 
 CREATE TABLE messages (
     id sqlite3_int64 PRIMARY KEY,
-    thread_id sqlite3_int64 NOT NULL REFERENCES threads(id) ON DELETE CASCADE
+    thread_id sqlite3_int64 NOT NULL REFERENCES threads(id) ON DELETE CASCADE,
+    built BOOLEAN NOT NULL DEFAULT FALSE,
+    last_edited TIMESTAMP
 );
 
 -- +goose down

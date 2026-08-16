@@ -4,9 +4,15 @@
 
 package database
 
+import (
+	"database/sql"
+)
+
 type Message struct {
-	ID       int64
-	ThreadID int64
+	ID         int64
+	ThreadID   int64
+	Built      bool
+	LastEdited sql.NullTime
 }
 
 type Thread struct {
