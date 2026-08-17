@@ -4,3 +4,6 @@ migrations = "migrations"
 
 [logging]
 debug = true
+
+[static]
+base_path = "/"

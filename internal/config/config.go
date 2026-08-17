@@ -12,6 +12,7 @@ import (
 type Public struct {
 	Database Database
 	Logging  Logging
+	Static   Static
 }
 
 type Database struct {
@@ -21,6 +22,10 @@ type Database struct {
 
 type Logging struct {
 	Debug bool // optional
+}
+
+type Static struct {
+	BasePath string `toml:"base_path"` // URL base path; "" or "/" = site root
 }
 
 func (p Public) isComplete() bool {
@@ -36,6 +41,9 @@ func (p *Public) overwrite(o Public) {
 	}
 	if o.Logging.Debug {
 		p.Logging.Debug = o.Logging.Debug
+	}
+	if o.Static.BasePath != "" {
+		p.Static.BasePath = o.Static.BasePath
 	}
 }
 
@@ -67,9 +75,10 @@ var (
 	secretPath = flagEnvString("secret", "configs/secret.toml", "Path to the secret config file")
 
 	// public overwrites
-	dbPath       = flagEnvString("database_path", "", "Overwrite path to the database")
-	dbMigrations = flagEnvString("database_migrations", "", "Overwrite path to the database migrations")
-	loggingDebug = flagEnvBool("logging_debug", false, "Overwrite logging debug flag")
+	dbPath          = flagEnvString("database_path", "", "Overwrite path to the database")
+	dbMigrations    = flagEnvString("database_migrations", "", "Overwrite path to the database migrations")
+	loggingDebug    = flagEnvBool("logging_debug", false, "Overwrite logging debug flag")
+	staticBasePath  = flagEnvString("static_base_path", "", "Overwrite URL base path for static site links")
 
 	// secret overwrites
 	discordToken     = flagEnvString("discord_token", "", "Overwrite Discord bot token")
@@ -92,6 +101,12 @@ func Parse() (Public, Secret, error) {
 	return pub, sec, nil
 }
 
+// LoadPublic reads only the public config, without requiring the secret token.
+func LoadPublic() (Public, error) {
+	flag.Parse()
+	return loadPub()
+}
+
 func loadPub() (Public, error) {
 	overrides := Public{
 		Database: Database{
@@ -100,6 +115,9 @@ func loadPub() (Public, error) {
 		},
 		Logging: Logging{
 			Debug: *loggingDebug,
+		},
+		Static: Static{
+			BasePath: *staticBasePath,
 		},
 	}
 

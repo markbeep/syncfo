@@ -1,0 +1,42 @@
+package page
+
+import "fmt"
+
+templ ThreadView(data ThreadPageData, basePath string) {
+	@Layout(data.Title, basePath) {
+		<header class="site-header">
+			<nav class="back"><a href={ ListURL(basePath, 0) }>&larr; All threads</a></nav>
+			<h1>{ data.Title }</h1>
+			<p class="meta">{ data.Server } / { data.Channel } &mdash; created { FormatTime(data.CreatedAt) }</p>
+		</header>
+		<main class="thread">
+			for _, m := range data.Messages {
+				@MessageView(m)
+			}
+		</main>
+		<footer class="pagination">
+			for p := 1; p <= data.TotalPages; p++ {
+				if p == data.Page {
+					<span class="current">{ fmt.Sprintf("%d", p) }</span>
+				} else {
+					<a href={ ThreadPageURL(basePath, data.ThreadID, p) }>{ fmt.Sprintf("%d", p) }</a>
+				}
+			}
+		</footer>
+	}
+}
+
+templ MessageView(m Message) {
+	<article class="message">
+		<header class="message-header">
+			<span class="author">{ m.Author }</span>
+			<span class="time">{ FormatTime(m.CreatedAt) }</span>
+			if m.EditedAt != nil {
+				<span class="edited">(edited)</span>
+			}
+		</header>
+		<div class="body">
+			@templ.Raw(m.HTML)
+		</div>
+	</article>
+}

@@ -1,0 +1,230 @@
+:root {
+  --border: #c8c8c8;
+  --bg: #f7f5f0;
+  --row: #ffffff;
+  --row-alt: #f0eee8;
+  --link: #1a4fa0;
+  --muted: #6b6b6b;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 0 16px 48px;
+  background: var(--bg);
+  color: #1a1a1a;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+}
+
+a {
+  color: var(--link);
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+.site-header {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 24px 0 8px;
+}
+
+.site-header h1 {
+  margin: 0 0 4px;
+  font-size: 1.6rem;
+}
+
+.site-header .meta {
+  margin: 0;
+  color: var(--muted);
+}
+
+.site-header .back {
+  margin-bottom: 8px;
+  font-size: 0.9rem;
+}
+
+.list,
+.thread {
+  max-width: 960px;
+  margin: 0 auto;
+}
+
+table.threads {
+  width: 100%;
+  border-collapse: collapse;
+  border: 1px solid var(--border);
+  background: var(--row);
+}
+
+table.threads th,
+table.threads td {
+  padding: 6px 10px;
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+  vertical-align: top;
+  font-size: 0.9rem;
+}
+
+table.threads thead th {
+  background: #e8e5dd;
+  font-weight: 600;
+}
+
+table.threads tbody tr:nth-child(even) {
+  background: var(--row-alt);
+}
+
+table.threads td.title a {
+  font-weight: 600;
+}
+
+table.threads td.replies {
+  text-align: right;
+  white-space: nowrap;
+}
+
+table.threads td.last {
+  white-space: nowrap;
+}
+
+table.threads .created {
+  display: block;
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+tr.dimmed td {
+  opacity: 0.45;
+}
+
+.next-page-row td {
+  border-bottom: none;
+  padding: 0;
+}
+
+.next-page {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 10px;
+}
+
+.next-page .line {
+  flex: 1;
+  border-top: 1px solid var(--border);
+}
+
+.next-page .next-button {
+  display: inline-block;
+  padding: 6px 16px;
+  border: 1px solid var(--border);
+  background: var(--row);
+  color: var(--link);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.next-page .next-button:hover {
+  background: #e8e5dd;
+  text-decoration: none;
+}
+
+.pagination {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  padding: 20px 0;
+}
+
+.pagination a,
+.pagination span.current {
+  padding: 2px 8px;
+  border: 1px solid var(--border);
+  background: var(--row);
+  min-width: 28px;
+  text-align: center;
+}
+
+.pagination span.current {
+  background: var(--border);
+  font-weight: 600;
+}
+
+.pagination a.newer {
+  margin-right: auto;
+}
+
+.pagination a.older {
+  margin-left: auto;
+}
+
+.message {
+  border: 1px solid var(--border);
+  border-bottom: none;
+  background: var(--row);
+}
+
+.message:last-child {
+  border-bottom: 1px solid var(--border);
+}
+
+.message-header {
+  padding: 6px 10px;
+  background: #e8e5dd;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.message-header .author {
+  font-weight: 600;
+  color: #1a1a1a;
+}
+
+.message-header .time {
+  margin-left: 8px;
+}
+
+.message-header .edited {
+  margin-left: 8px;
+  font-style: italic;
+}
+
+.message .body {
+  padding: 8px 12px;
+  overflow-wrap: break-word;
+}
+
+.message .body pre {
+  background: #efece4;
+  padding: 8px 10px;
+  overflow-x: auto;
+  border: 1px solid var(--border);
+}
+
+.message .body code {
+  background: #efece4;
+  padding: 1px 4px;
+}
+
+.message .body pre code {
+  background: none;
+  padding: 0;
+}
+
+.message .body blockquote {
+  margin: 8px 0;
+  padding: 2px 12px;
+  border-left: 3px solid var(--border);
+  color: var(--muted);
+}
+
+.message .body img {
+  max-width: 100%;
+}

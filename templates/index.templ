@@ -1,0 +1,67 @@
+package page
+
+import "fmt"
+
+templ List(data ListPageData, basePath string) {
+	@Layout("Threads", basePath) {
+		<header class="site-header">
+			<h1>Threads</h1>
+		</header>
+		<main class="list">
+			<table class="threads">
+				<thead>
+					<tr>
+						<th class="title">Title</th>
+						<th>Server</th>
+						<th>Channel</th>
+						<th>Author</th>
+						<th>Replies</th>
+						<th>Last message</th>
+					</tr>
+				</thead>
+				<tbody>
+					for _, s := range data.Threads {
+						@ThreadRow(s, false, basePath)
+					}
+					if data.Number == 0 {
+						if data.NextNumber >= 0 {
+							<tr class="next-page-row">
+								<td colspan="6">
+									<div class="next-page">
+										<span class="line"></span>
+										<a class="next-button" href={ ListURL(basePath, data.NextNumber) }>View Next Page</a>
+										<span class="line"></span>
+									</div>
+								</td>
+							</tr>
+						}
+					}
+					for _, s := range data.Preview {
+						@ThreadRow(s, true, basePath)
+					}
+				</tbody>
+			</table>
+			if data.Number != 0 {
+				<nav class="pagination">
+					if data.PrevNumber >= 0 {
+						<a class="newer" href={ ListURL(basePath, data.PrevNumber) }>&larr; Newer</a>
+					}
+					if data.NextNumber >= 0 {
+						<a class="older" href={ ListURL(basePath, data.NextNumber) }>Older &rarr;</a>
+					}
+				</nav>
+			}
+		</main>
+	}
+}
+
+templ ThreadRow(s ThreadSummary, dimmed bool, basePath string) {
+	<tr class={ templ.Classes(templ.KV("dimmed", dimmed)) }>
+		<td class="title"><a href={ ThreadURL(basePath, s.ID) }>{ s.Title }</a></td>
+		<td class="server">{ s.Server }</td>
+		<td class="channel">{ s.Channel }</td>
+		<td class="author">{ s.Author } <span class="created">{ FormatTime(s.CreatedAt) }</span></td>
+		<td class="replies">{ fmt.Sprintf("%d", s.ReplyCount) }</td>
+		<td class="last">{ FormatTime(s.LastMessageAt) }</td>
+	</tr>
+}
