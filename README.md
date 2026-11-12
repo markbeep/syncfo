@@ -1,5 +1,8 @@
 # syncfo
 
+> [!WARNING]
+> This repo is archived. Discord now indexes messages from Discoverable Servers on Server Web Pages and in web search, covering the problem syncfo was exploring. See the announcement: [Making Content from Discoverable Servers Easier to Discover](https://discord.com/blog/making-content-from-discoverable-servers-easier-to-discover).
+
 > [!note]
 > Currently this repo is for gathering ideas, brainstorming, and planning out the final app. There's no usable app as of now. If you have ideas, don't hesitate to create issues where we can discuss them.
 
